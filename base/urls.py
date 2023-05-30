@@ -11,6 +11,7 @@ urlpatterns = [
     path('kriteria/', views.kriteria, name='kriteria'),
     path('edit-kriteria/<str:pk>', views.edit_kriteria, name='edit-kriteria'),
 
+    path('penilaian/', views.penilaian, name='penilaian'),
     path('add-penilaian/', views.add_penilaian, name='add-penilaian'),
     path('edit-penilaian/<str:pk>', views.edit_penilaian, name='edit-penilaian'),
 

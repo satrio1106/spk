@@ -106,6 +106,28 @@ def sub_kriteria(request):
     return render(request, 'base/sub-kriteria.html', context)
 
 
+def penilaian(request):
+    penilaian = Penilaian.objects.all()
+    kriteria = Kriteria.objects.all()
+
+    kf_max = Penilaian.objects.aggregate(max_value=Max('kelengkapan_fitur'))['max_value'] if kriteria[0].status == 'benefit' else Penilaian.objects.aggregate(min_value=Min('kelengkapan_fitur'))['min_value']
+    kp_max = Penilaian.objects.aggregate(max_value=Max('kemudahan_penggunaan'))['max_value'] if kriteria[1].status == 'benefit' else Penilaian.objects.aggregate(min_value=Min('kemudahan_penggunaan'))['min_value']
+    k_max = Penilaian.objects.aggregate(max_value=Max('keamanan'))['max_value'] if kriteria[2].status == 'benefit' else Penilaian.objects.aggregate(min_value=Min('keamanan'))['min_value']
+    b_max = Penilaian.objects.aggregate(max_value=Max('biaya'))['max_value'] if kriteria[3].status == 'benefit' else Penilaian.objects.aggregate(min_value=Min('biaya'))['min_value']
+
+
+    context = {
+        'penilaian': penilaian,
+        'kriteria': kriteria,
+        'kf_max': kf_max,
+        'kp_max': kp_max,
+        'k_max': k_max,
+        'b_max': b_max,
+    }
+
+    return render(request, 'base/penilaian.html', context)
+
+
 def add_penilaian(request):
 
     form = PenilaianForm()
