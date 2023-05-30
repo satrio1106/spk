@@ -1,10 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Sum, Max, Min
 
 import numpy as np
 from functools import reduce
 from copy import deepcopy
 from .models import Alternatif, Kriteria, BobotKriteria, Penilaian
+from .forms import AlternatifForm
 
 
 # Create your views here.
@@ -23,6 +24,24 @@ def alternatif(request):
     }
 
     return render(request, 'base/alternatif.html', context)
+
+
+def form_alternatif(request):
+
+    form = AlternatifForm()
+
+    if request.method == 'POST':
+        form = AlternatifForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect('alternatif')
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'base/form-alternatif.html', context)
 
 
 def kriteria(request):
@@ -160,8 +179,30 @@ def metode_wp(request):
 
 
 def metode_ahp(request):
-    context = {
 
+    alternatif = Alternatif.objects.all()
+    penilaian = Penilaian.objects.all()
+    bobotK = BobotKriteria.objects.all()
+
+    kriteria = Kriteria.objects.all()
+    sum_bobot = BobotKriteria.objects.aggregate(total_sum=Sum('bobot'))
+    bobot_max = sum_bobot['total_sum']
+
+    kf_max = Penilaian.objects.aggregate(max_value=Max('kelengkapan_fitur'))['max_value'] if kriteria[0].status == 'benefit' else Penilaian.objects.aggregate(min_value=Min('kelengkapan_fitur'))['min_value']
+    kp_max = Penilaian.objects.aggregate(max_value=Max('kemudahan_penggunaan'))['max_value'] if kriteria[1].status == 'benefit' else Penilaian.objects.aggregate(min_value=Min('kemudahan_penggunaan'))['min_value']
+    k_max = Penilaian.objects.aggregate(max_value=Max('keamanan'))['max_value'] if kriteria[2].status == 'benefit' else Penilaian.objects.aggregate(min_value=Min('keamanan'))['min_value']
+    b_max = Penilaian.objects.aggregate(max_value=Max('biaya'))['max_value'] if kriteria[3].status == 'benefit' else Penilaian.objects.aggregate(min_value=Min('biaya'))['min_value']
+
+
+    context = {
+        'penilaian': penilaian,
+        'kriteria': kriteria,
+        'bobot_max': bobot_max,
+
+        'kf_max': kf_max,
+        'kp_max': kp_max,
+        'k_max': k_max,
+        'b_max': b_max,
     }
 
     return render(request, 'base/ahp.html', context)
