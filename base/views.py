@@ -5,7 +5,7 @@ import numpy as np
 from functools import reduce
 from copy import deepcopy
 from .models import Alternatif, Kriteria, BobotKriteria, Penilaian
-from .forms import AlternatifForm
+from .forms import AlternatifForm, BobotKriteriaForm, PenilaianForm
 
 
 # Create your views here.
@@ -26,7 +26,7 @@ def alternatif(request):
     return render(request, 'base/alternatif.html', context)
 
 
-def form_alternatif(request):
+def add_alternatif(request):
 
     form = AlternatifForm()
 
@@ -44,6 +44,29 @@ def form_alternatif(request):
     return render(request, 'base/form-alternatif.html', context)
 
 
+def edit_alternatif(request, pk):
+    alternatif = Alternatif.objects.get(id=pk)
+    form = AlternatifForm(instance=alternatif)
+
+    if request.method == 'POST':
+        form = AlternatifForm(request.POST, instance=alternatif)
+
+        if form.is_valid():
+            form.save()
+            return redirect('alternatif')
+    context = {
+        'form':form,
+    }
+
+    return render(request, 'base/form-alternatif.html', context)
+
+def delete_alternatif(request, pk):
+    alternatif = Alternatif.objects.get(id=pk)
+
+    alternatif.delete()
+
+    return redirect('alternatif')
+
 def kriteria(request):
     kriteria = Kriteria.objects.all()
     sum_bobot = BobotKriteria.objects.aggregate(total_sum=Sum('bobot'))
@@ -56,12 +79,70 @@ def kriteria(request):
 
     return render(request, 'base/kriteria.html', context)
 
+def edit_kriteria(request, pk):
+    kriteria = Kriteria.objects.get(id=pk)
+    bobot_kriteria = kriteria.bobotkriteria
+    form = BobotKriteriaForm(instance=bobot_kriteria)
+    print(bobot_kriteria.bobot)
+
+    if request.method == 'POST':
+        form = BobotKriteriaForm(request.POST, instance=bobot_kriteria)
+
+        if form.is_valid():
+            form.save()
+            return redirect('kriteria')
+    context = {
+        'form':form,
+        'kriteria': kriteria,
+    }
+
+    return render(request, 'base/form-kriteria.html', context)
+
 def sub_kriteria(request):
     context = {
 
     }
 
     return render(request, 'base/sub-kriteria.html', context)
+
+
+def add_penilaian(request):
+
+    form = PenilaianForm()
+
+    if request.method == 'POST':
+        form = PenilaianForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            return redirect('metode-saw')
+        
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'base/tambah-data-penilaian.html', context)
+
+
+def edit_penilaian(request, pk):
+    alternatif = Alternatif.objects.get(id=pk)
+    penilaian = alternatif.penilaian_set.all()[0]
+
+    form = PenilaianForm(instance=penilaian)
+
+    if request.method == 'POST':
+        form = PenilaianForm(request.POST, instance=penilaian)
+
+        if form.is_valid():
+            form.save()
+            return redirect('metode-saw')
+
+
+    context = {
+        'form': form,
+        'alternatif': alternatif,
+    }
+    return render(request, 'base/edit-penilaian.html', context)
 
 def metode_saw(request):
 
